@@ -6,7 +6,7 @@ from datetime import datetime
 
 # ─── Page config ───
 st.set_page_config(
-    page_title="律师内容工厂 | Legal Content Studio",
+    page_title="内容工厂 | Legal Content Studio",
     page_icon="⚖️",
     layout="centered",
 )
