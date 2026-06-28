@@ -223,9 +223,11 @@ def claude_fetch_news(key, topic_cfg):
         messages=[{"role": "user", "content": prompt}],
     )
     full_text = ""
-    for block in response.content:
+    for block in (response.content or []):
         if hasattr(block, "text"):
             full_text += block.text
+    if not full_text:
+        raise ValueError("Claude 返回内容为空，请重试")
     return _parse_news_json(full_text)
 
 
@@ -255,7 +257,10 @@ def gemini_fetch_news(key, topic_cfg):
             tools=[types.Tool(google_search=types.GoogleSearch())],
         ),
     )
-    return _parse_news_json(response.text)
+    text = response.text or ""
+    if not text:
+        raise ValueError("Gemini 返回内容为空，请重试")
+    return _parse_news_json(text)
 
 
 def gemini_generate_post(key, news_data, topic_cfg, platform):
@@ -275,20 +280,31 @@ def grok_fetch_news(key, topic_cfg):
     client = OpenAI(api_key=key, base_url="https://api.x.ai/v1")
     queries_text = "\n".join(f"- {q}" for q in topic_cfg["queries"])
     prompt = _news_prompt(queries_text)
-    response = client.responses.create(
-        model="grok-3-mini-fast",
-        input=[{"role": "user", "content": prompt}],
-        tools=[{"type": "web_search"}],
-    )
-    full_text = ""
-    for block in response.output:
-        if hasattr(block, "content"):
-            for part in block.content:
-                if hasattr(part, "text"):
-                    full_text += part.text
-        elif hasattr(block, "text"):
-            full_text += block.text
-    return _parse_news_json(full_text)
+    try:
+        response = client.responses.create(
+            model="grok-3-mini-fast",
+            input=[{"role": "user", "content": prompt}],
+            tools=[{"type": "web_search"}],
+        )
+        full_text = ""
+        output = response.output or []
+        for block in output:
+            if hasattr(block, "content") and block.content:
+                for part in block.content:
+                    if hasattr(part, "text"):
+                        full_text += part.text
+            elif hasattr(block, "text"):
+                full_text += block.text
+        if not full_text:
+            full_text = str(response)
+        return _parse_news_json(full_text)
+    except Exception:
+        # Fallback: use chat completions without search
+        response = client.chat.completions.create(
+            model="grok-3-mini-fast",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return _parse_news_json(response.choices[0].message.content)
 
 
 def grok_generate_post(key, news_data, topic_cfg, platform):
