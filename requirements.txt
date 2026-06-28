@@ -1,0 +1,71 @@
+# ⚖️ 律师内容工厂 | Legal Content Studio
+
+AI-powered social media content generator for Sydney solicitors targeting the Chinese-speaking community.
+
+## Features
+
+- 🔍 **Auto-fetch** latest AU property, conveyancing, wills & trust news via web search
+- ✍️ **AI-generate** humorous, engaging posts for 小红书 and WeChat
+- 📱 **Mobile-first** design — copy & paste directly to your apps
+- 🔄 **Regenerate** until you're happy with the tone
+
+## Deploy to Streamlit Cloud (Free)
+
+### 1. Create a GitHub repository
+
+Push these files to a **new GitHub repo**:
+
+```
+your-repo/
+├── app.py
+├── requirements.txt
+└── README.md
+```
+
+### 2. Deploy on Streamlit Cloud
+
+1. Go to [share.streamlit.io](https://share.streamlit.io)
+2. Sign in with your GitHub account
+3. Click **"New app"**
+4. Select your repo, branch `main`, and file `app.py`
+5. Click **"Deploy"**
+
+### 3. Set your API key
+
+**Option A — Enter in sidebar each time (simple):**
+Open the app on your phone → tap the sidebar → paste your Anthropic API key.
+
+**Option B — Store as a Streamlit Secret (recommended):**
+1. In Streamlit Cloud dashboard, click your app → **Settings** → **Secrets**
+2. Add:
+   ```toml
+   ANTHROPIC_API_KEY = "sk-ant-..."
+   ```
+3. Then update line 113 in `app.py` to read from secrets:
+   ```python
+   key = st.session_state.get("api_key", "") or st.secrets.get("ANTHROPIC_API_KEY", "")
+   ```
+
+### 4. Use on your phone
+
+1. Open the Streamlit URL on your phone browser
+2. **Add to Home Screen** for app-like access
+3. Select topic → Fetch news → Generate post → Expand copy section → Long-press to select all → Copy → Paste into 小红书 or WeChat
+
+## API Key
+
+Get your Anthropic API key at [console.anthropic.com](https://console.anthropic.com).
+
+## Topics Covered
+
+| Category | Content Focus |
+|----------|--------------|
+| 🏠 房产过户 | Stamp duty, settlement, conveyancing law |
+| 📈 房市动态 | Sydney prices, auctions, forecasts |
+| 📜 遗嘱遗产 | Wills, probate, inheritance disputes |
+| 🏗️ 信托架构 | Family trusts, tax structures |
+| 🌏 移民签证 | Visa policy, investor migration |
+
+## Disclaimer
+
+AI-generated content is for reference only. Always verify legal information before publishing.
