@@ -61,6 +61,32 @@ header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
+# ─── Password Gate ───
+try:
+    APP_PASSWORD = st.secrets.get("APP_PASSWORD", "hello1234")
+except Exception:
+    APP_PASSWORD = "hello1234"
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.markdown("""
+    <div class="app-header">
+        <h1>⚖️ 内容工厂</h1>
+        <p>请输入密码登录</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    pwd = st.text_input("🔒 密码 Password", type="password", placeholder="请输入密码...")
+    if st.button("登录 Login", use_container_width=True, type="primary"):
+        if pwd == APP_PASSWORD:
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("❌ 密码错误，请重试")
+    st.stop()
+
 # ─── Header ───
 st.markdown("""
 <div class="app-header">
@@ -249,12 +275,20 @@ def grok_fetch_news(key, topic_cfg):
     client = OpenAI(api_key=key, base_url="https://api.x.ai/v1")
     queries_text = "\n".join(f"- {q}" for q in topic_cfg["queries"])
     prompt = _news_prompt(queries_text)
-    response = client.chat.completions.create(
+    response = client.responses.create(
         model="grok-3-mini-fast",
-        messages=[{"role": "user", "content": prompt}],
-        search_mode="auto",
+        input=[{"role": "user", "content": prompt}],
+        tools=[{"type": "web_search"}],
     )
-    return _parse_news_json(response.choices[0].message.content)
+    full_text = ""
+    for block in response.output:
+        if hasattr(block, "content"):
+            for part in block.content:
+                if hasattr(part, "text"):
+                    full_text += part.text
+        elif hasattr(block, "text"):
+            full_text += block.text
+    return _parse_news_json(full_text)
 
 
 def grok_generate_post(key, news_data, topic_cfg, platform):
