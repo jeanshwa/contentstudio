@@ -141,7 +141,7 @@ header {visibility: hidden;}
 # ─── Header ───
 st.markdown("""
 <div class="app-header">
-    <h1>⚖️ 律师内容工厂</h1>
+    <h1>⚖️ 内容工厂</h1>
     <p>一键抓取新闻 → AI生成爆款帖 → 复制粘贴发布</p>
 </div>
 """, unsafe_allow_html=True)
